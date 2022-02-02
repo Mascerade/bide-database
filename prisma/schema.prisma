@@ -1,0 +1,38 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  // Provide the ID for a user so that this model can
+  // be pivoted to usinb Firebase later on
+  id     String  @id
+  posts  Post[]
+  groups Group[]
+}
+
+model Post {
+  id       Int      @id @default(autoincrement())
+  postDate DateTime @default(now())
+  title    String
+  content  String
+  author   User     @relation(fields: [authorId], references: [id])
+  authorId String
+  group    Group    @relation(fields: [groupId], references: [id])
+  groupId  Int
+}
+
+model Group {
+  id          Int    @id @default(autoincrement())
+  title       String @db.VarChar(100)
+  description String @db.VarChar(300)
+  users       User[]
+  posts       Post[]
+}
