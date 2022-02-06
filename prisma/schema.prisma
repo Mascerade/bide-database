@@ -13,12 +13,13 @@ datasource db {
 model User {
   // Provide the ID for a user so that this model can
   // be pivoted to using Firebase later on
-  id        String  @id
-  username  String  @unique
-  firstName String?
-  lastName  String?
-  posts     Post[]
-  groups    Group[]
+  id                 String                  @id
+  username           String                  @unique
+  firstName          String?
+  lastName           String?
+  posts              Post[]
+  groups             GroupUser[]
+  groupGeneralTokens GeneralTokenGroupUser[]
 }
 
 model Post {
@@ -33,9 +34,41 @@ model Post {
 }
 
 model Group {
-  id          Int    @id @default(autoincrement())
-  title       String @db.VarChar(100)
-  description String @db.VarChar(300)
-  users       User[]
-  posts       Post[]
+  id                Int                     @id @default(autoincrement())
+  title             String                  @db.VarChar(100)
+  description       String                  @db.VarChar(300)
+  posts             Post[]
+  users             GroupUser[]
+  userGeneralTokens GeneralTokenGroupUser[]
+}
+
+model GeneralToken {
+  id          String                  @id
+  title       String                  @unique
+  description String
+  groupUsers  GeneralTokenGroupUser[]
+}
+
+model GroupUser {
+  id         Int      @id @default(autoincrement())
+  user       User     @relation(fields: [userId], references: [id])
+  userId     String
+  group      Group    @relation(fields: [groupId], references: [id])
+  groupId    Int
+  dateJoined DateTime @default(now())
+
+  @@unique([userId, groupId])
+}
+
+model GeneralTokenGroupUser {
+  id             Int          @id @default(autoincrement())
+  user           User         @relation(fields: [userId], references: [id])
+  userId         String
+  group          Group        @relation(fields: [groupId], references: [id])
+  groupId        Int
+  generalToken   GeneralToken @relation(fields: [generalTokenId], references: [id])
+  generalTokenId String
+  dateAssigned   DateTime     @default(now())
+
+  @@unique([userId, groupId, generalTokenId])
 }
