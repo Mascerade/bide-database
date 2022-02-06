@@ -12,10 +12,13 @@ datasource db {
 
 model User {
   // Provide the ID for a user so that this model can
-  // be pivoted to usinb Firebase later on
-  id     String  @id
-  posts  Post[]
-  groups Group[]
+  // be pivoted to using Firebase later on
+  id        String  @id
+  username  String  @unique
+  firstName String?
+  lastName  String?
+  posts     Post[]
+  groups    Group[]
 }
 
 model Post {
