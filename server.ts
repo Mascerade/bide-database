@@ -1,9 +1,10 @@
-import { Prisma } from '@prisma/client'
+import { GeneralToken, Prisma, User } from '@prisma/client'
 import express, { Request, Response } from 'express'
 import cors from 'cors'
 import { prisma } from './src/db'
 import { checkUserGroup } from './src/databaseHelpers'
 import { SERVER_PORT } from './src/constants'
+import { Undefinable, Nullable } from './types/helpers'
 
 const app = express()
 app.use(cors({
@@ -30,7 +31,7 @@ app.post('/user', async (req: Request, res: Response) => {
 })
 
 app.delete('/user/:id', async (req: Request, res: Response) => {
-  const userToDelete: string = req.body.id
+  const userToDelete: User['id'] = req.params.id
 
   try {
     // Delete the user
@@ -93,6 +94,46 @@ app.post('/post', async (req: Request, res: Response) => {
   } catch (e) {
     console.error(e)
     return res.status(400).json({ message: 'Unable to create a new post.' })
+  }
+})
+
+app.post('/general-token', async (req: Request, res: Response) => {
+  const tokenToCreate: Prisma.GeneralTokenCreateManyInput = req.body
+
+  try {
+    // Create the token
+    await prisma.generalToken.create({
+      data: {
+        ...tokenToCreate
+      }
+    })
+
+    return res.status(201).json({ message: 'General token was successfully created' })
+  } catch (e) {
+    console.error(e)
+    res.status(400).json({ message: 'Unable to create the general token.' })
+  }
+})
+
+app.put('/general-token/:id', async (req: Request, res: Response) => {
+  // For now, the ID of the token cannot be changed
+  const tokenId: GeneralToken['id'] = req.params.id
+  const tokenToUpdate: Undefinable<Omit<Prisma.GeneralTokenCreateManyInput, 'id'>> = req.body
+
+  try {
+    // Update the token
+    await prisma.generalToken.update({
+      where: {
+        id: tokenId
+      },
+      data: {
+        ...tokenToUpdate
+      }
+    })
+    return res.status(201).json({ message: 'General token was successfully updated.' })
+  } catch (e) {
+    console.log(e)
+    return res.status(400).json({ message: 'Unable to update the general token.' })
   }
 })
 
