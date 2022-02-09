@@ -18,7 +18,7 @@ model User {
   firstName          String?
   lastName           String?
   posts              Post[]
-  groups             GroupUser[]
+  userGroups         GroupUser[]
   groupGeneralTokens GeneralTokenGroupUser[]
 }
 
@@ -27,9 +27,9 @@ model Post {
   postDate DateTime @default(now())
   title    String
   content  String
-  author   User     @relation(fields: [authorId], references: [id])
+  author   User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
   authorId String
-  group    Group    @relation(fields: [groupId], references: [id])
+  group    Group    @relation(fields: [groupId], references: [id], onDelete: Cascade)
   groupId  Int
 }
 
@@ -38,7 +38,7 @@ model Group {
   title             String                  @db.VarChar(100)
   description       String                  @db.VarChar(300)
   posts             Post[]
-  users             GroupUser[]
+  groupUsers        GroupUser[]
   userGeneralTokens GeneralTokenGroupUser[]
 }
 
@@ -46,14 +46,14 @@ model GeneralToken {
   id          String                  @id
   title       String                  @unique
   description String
-  groupUsers  GeneralTokenGroupUser[]
+  groupsUsers GeneralTokenGroupUser[]
 }
 
 model GroupUser {
   id         Int      @id @default(autoincrement())
-  user       User     @relation(fields: [userId], references: [id])
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId     String
-  group      Group    @relation(fields: [groupId], references: [id])
+  group      Group    @relation(fields: [groupId], references: [id], onDelete: Cascade)
   groupId    Int
   dateJoined DateTime @default(now())
 
@@ -62,9 +62,9 @@ model GroupUser {
 
 model GeneralTokenGroupUser {
   id             Int          @id @default(autoincrement())
-  user           User         @relation(fields: [userId], references: [id])
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId         String
-  group          Group        @relation(fields: [groupId], references: [id])
+  group          Group        @relation(fields: [groupId], references: [id], onDelete: Cascade)
   groupId        Int
   generalToken   GeneralToken @relation(fields: [generalTokenId], references: [id])
   generalTokenId String

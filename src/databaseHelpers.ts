@@ -10,7 +10,7 @@ export const checkUserGroup = async function (userId: User['id'], groupId: Group
       id: userId
     },
     include: {
-      groups: {
+      userGroups: {
         where: {
           id: groupId
         }
@@ -20,7 +20,23 @@ export const checkUserGroup = async function (userId: User['id'], groupId: Group
 
   console.log(foundUser)
 
-  if (foundUser?.groups[0] != null) {
+  if (foundUser?.userGroups[0] != null) {
+    return true
+  } else {
+    return false
+  }
+}
+
+export const checkExistenceOfUser = async function (userId: User['id']): Promise<Boolean> {
+  // Check that a user exists given their ID
+
+  const foundUser = await prisma.user.findUnique({
+    where: {
+      id: userId
+    }
+  })
+
+  if (foundUser != null) {
     return true
   } else {
     return false

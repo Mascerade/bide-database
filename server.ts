@@ -1,4 +1,4 @@
-import { GeneralToken, Prisma, User } from '@prisma/client'
+import { GeneralToken, Group, Prisma, User } from '@prisma/client'
 import express, { Request, Response } from 'express'
 import cors from 'cors'
 import { prisma } from './src/db'
@@ -49,19 +49,36 @@ app.delete('/user/:id', async (req: Request, res: Response) => {
 })
 
 app.post('/group', async (req: Request, res: Response) => {
-  const groupToCreate: Prisma.GroupCreateManyInput = req.body;
+  const creatorUser: User['id'] = req.body.userId
+  const groupToCreate: Omit<Prisma.GroupCreateManyInput, 'id'> = req.body.groupData
 
   try {
     // TODO: When creating a group, a specific user must have created the group
     //       meaning not only do we have to make sure we update the user with the group
     //       we also must add an administrator token to that user for that particular group
     // Create a group
-    await prisma.group.create({
+    const groupCreated: Group = await prisma.group.create({
       data: {
         ...groupToCreate
       }
     })
-    // Created the group
+
+    // Add to GroupUser to indicate that the user is a part of the group
+    await prisma.groupUser.create({
+      data: {
+        userId: creatorUser,
+        groupId: groupCreated.id
+      }
+    })
+
+    // Add to GeneralTokenGroupUser to indicate that the user is the administrator of the group
+    await prisma.generalTokenGroupUser.create({
+      data: {
+        generalTokenId: 'administrator',
+        groupId: groupCreated.id,
+        userId: creatorUser
+      }
+    })
     return res.status(201).json({ message: 'Group was successfully created' })
   } catch (e) {
     console.error(e)

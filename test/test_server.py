@@ -1,9 +1,9 @@
 import requests
 
 while True:
-    user_input = input('What would you like to do? ')
+    user_input = input('What would you like to do? ').lower()
 
-    if user_input.lower() == 'create user':
+    if user_input == 'create user':
         id = input('ID: ')
         username = input('Username: ')
         first_name = input('First Name: ')
@@ -24,18 +24,28 @@ while True:
 
         print(response.json())
 
-    elif user_input.lower() == 'create group':
+    elif user_input == 'delete user':
+        userId = input('ID: ')
+
+        response = requests.delete(f'http://localhost:3000/user/{userId}')
+        print(response.json())
+
+    elif user_input == 'create group':
+        userId = input('UserID: ')
         title = input('Title: ')
         description = input('Description: ')
 
         response = requests.post('http://localhost:3000/group', json={
-            'title': title,
-            'description': description
+            'userId': userId,
+            'groupData': {
+                'title': title,
+                'description': description
+            }
         })
 
         print(response.json())
 
-    elif user_input.lower() == 'create post':
+    elif user_input == 'create post':
         userId = input('User ID: ')
         groupId = input('Group ID: ')
         title = input('Title: ')
@@ -50,7 +60,7 @@ while True:
 
         print(response.json())
 
-    elif user_input.lower() == 'create general token':
+    elif user_input == 'create general token':
         id = input('Token ID: ')
         title = input('Token Title: ')
         description = input('Token Description: ')
@@ -63,7 +73,7 @@ while True:
 
         print(response.json())
 
-    elif user_input.lower() == 'update general token':
+    elif user_input == 'update general token':
         id = input('Token ID: ')
         title = input('New Token Title: ')
         description = input('New Token Description: ')
