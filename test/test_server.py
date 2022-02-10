@@ -25,6 +25,12 @@ while True:
 
         print(response.json())
 
+    elif user_input == 'delete user':
+        userId = input('ID: ')
+
+        response = requests.delete(f'http://localhost:3000/user/{userId}')
+        print(response.json())
+
     if user_input == 'update user':
         id = input('ID: ')
         username = input('Username: ')
@@ -45,10 +51,10 @@ while True:
 
         print(response.json())
 
-    elif user_input == 'delete user':
-        userId = input('ID: ')
+    if user_input == 'get user':
+        id = input('ID: ')
 
-        response = requests.delete(f'http://localhost:3000/user/{userId}')
+        response = requests.get(f'http://localhost:3000/user/{id}')
         print(response.json())
 
     elif user_input == 'create group':

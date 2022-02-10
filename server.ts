@@ -68,6 +68,29 @@ app.put('/user/:id', async (req: Request, res: Response) => {
   }
 })
 
+app.get('/user/:id', async (req: Request, res: Response) => {
+  const userId: User['id'] = req.params.id
+
+  try {
+    // Get the user
+    const foundUser = await prisma.user.findFirst({
+      where: {
+        id: userId
+      },
+      include: {
+        userGroups: {
+          include: {
+            group: true
+          }
+        }
+      }
+    })
+    return res.status(200).json(foundUser)
+  } catch (e) {
+    return res.status(400).json({ message: 'Unable to find the user.' })
+  }
+})
+
 app.post('/group', async (req: Request, res: Response) => {
   const creatorUser: User['id'] = req.body.userId
   const groupToCreate: Omit<Prisma.GroupCreateManyInput, 'id'> = req.body.groupData
