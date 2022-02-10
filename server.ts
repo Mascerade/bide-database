@@ -41,10 +41,30 @@ app.delete('/user/:id', async (req: Request, res: Response) => {
       }
     })
     // Deleted the user
-    return res.status(201).json({ message: 'User was succesfully deleted.' })
+    return res.status(201).json({ message: 'User was successfully deleted.' })
   } catch (e) {
     console.error(e)
     return res.status(400).json({ message: 'Unable to delete the user.' })
+  }
+})
+
+app.put('/user/:id', async (req: Request, res: Response) => {
+  const userToUpdate: User['id'] = req.params.id
+  const newUserInformation: Undefinable<Omit<User, 'id'>> = req.body
+
+  try {
+    // Update the user
+    await prisma.user.update({
+      where: {
+        id: userToUpdate
+      },
+      data: {
+        ...newUserInformation
+      }
+    })
+    return res.status(201).json({ message: 'User was successfully updated.' })
+  } catch (e) {
+    return res.status(400).json({ message: 'Unable to update the user.' })
   }
 })
 
@@ -53,10 +73,6 @@ app.post('/group', async (req: Request, res: Response) => {
   const groupToCreate: Omit<Prisma.GroupCreateManyInput, 'id'> = req.body.groupData
 
   try {
-    // TODO: When creating a group, a specific user must have created the group
-    //       meaning not only do we have to make sure we update the user with the group
-    //       we also must add an administrator token to that user for that particular group
-    // Create a group
     const groupCreated: Group = await prisma.group.create({
       data: {
         ...groupToCreate

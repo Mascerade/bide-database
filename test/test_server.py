@@ -8,6 +8,7 @@ while True:
         username = input('Username: ')
         first_name = input('First Name: ')
         last_name = input('Last Name: ')
+
         if first_name == '':
             first_name = None
             last_name = None
@@ -16,11 +17,31 @@ while True:
             last_name == None
 
         response = requests.post('http://localhost:3000/user', json={
-            "id": id,
-            "username": username,
-            "firstName": first_name,
-            "lastName": last_name
+            'id': id,
+            'username': username,
+            'firstName': first_name,
+            'lastName': last_name
         })
+
+        print(response.json())
+
+    if user_input == 'update user':
+        id = input('ID: ')
+        username = input('Username: ')
+        first_name = input('First Name: ')
+        last_name = input('Last Name: ')
+        payload = {}
+        if username != '':
+            payload['username'] = username
+
+        if first_name != '':
+            payload['firstName'] = first_name
+
+        if last_name != '':
+            payload['lastName'] = last_name
+
+        response = requests.put(
+            f'http://localhost:3000/user/{id}', json=payload)
 
         print(response.json())
 
