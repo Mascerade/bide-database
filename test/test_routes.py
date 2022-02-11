@@ -1,11 +1,13 @@
+from email.policy import default
 import requests
+import yaml
 
 while True:
     user_input = input('What would you like to do? ').lower()
 
     # User
     if user_input == 'create user':
-        id = input('ID: ')
+        id = input('User ID: ')
         username = input('Username: ')
         first_name = input('First Name: ')
         last_name = input('Last Name: ')
@@ -24,16 +26,16 @@ while True:
             'lastName': last_name
         })
 
-        print(response.json())
+        print(yaml.dump(response.json(), default_flow_style=False))
 
     elif user_input == 'delete user':
-        userId = input('ID: ')
+        userId = input('User ID: ')
 
         response = requests.delete(f'http://localhost:3000/user/{userId}')
-        print(response.json())
+        print(yaml.dump(response.json(), default_flow_style=False))
 
     if user_input == 'update user':
-        id = input('ID: ')
+        id = input('User ID: ')
         username = input('Username: ')
         first_name = input('First Name: ')
         last_name = input('Last Name: ')
@@ -50,13 +52,19 @@ while True:
         response = requests.put(
             f'http://localhost:3000/user/{id}', json=payload)
 
-        print(response.json())
+        print(yaml.dump(response.json(), default_flow_style=False))
 
     if user_input == 'get user':
-        id = input('ID: ')
+        id = input('User ID: ')
 
         response = requests.get(f'http://localhost:3000/user/{id}')
-        print(response.json())
+        print(yaml.dump(response.json(), default_flow_style=False))
+
+    if user_input == 'get user posts':
+        id = input('User ID: ')
+
+        response = requests.get(f'http://localhost:3000/user-posts/{id}')
+        print(yaml.dump(response.json(), default_flow_style=False))
 
     # Group
     elif user_input == 'create group':
@@ -72,25 +80,25 @@ while True:
             }
         })
 
-        print(response.json())
+        print(yaml.dump(response.json(), default_flow_style=False))
 
     elif user_input == 'get group users':
         id = input('GroupID: ')
 
         response = requests.get(f'http://localhost:3000/group-users/{id}')
-        print(response.json())
+        print(yaml.dump(response.json(), default_flow_style=False))
 
     elif user_input == 'get group posts':
         id = input('GroupID: ')
 
         response = requests.get(f'http://localhost:3000/group-posts/{id}')
-        print(response.json())
+        print(yaml.dump(response.json(), default_flow_style=False))
 
     elif user_input == 'delete group':
         id = input('GroupID: ')
 
         response = requests.delete(f'http://localhost:3000/group/{id}')
-        print(response.json())
+        print(yaml.dump(response.json(), default_flow_style=False))
 
     # Post
     elif user_input == 'create post':
@@ -106,7 +114,7 @@ while True:
             'content': content
         })
 
-        print(response.json())
+        print(yaml.dump(response.json(), default_flow_style=False))
 
     # General Token
     elif user_input == 'create general token':
@@ -120,7 +128,7 @@ while True:
             'description': description
         })
 
-        print(response.json())
+        print(yaml.dump(response.json(), default_flow_style=False))
 
     elif user_input == 'update general token':
         id = input('Token ID: ')
@@ -137,4 +145,4 @@ while True:
 
         response = requests.put(
             f'http://localhost:3000/general-token/{id}', json=payload)
-        print(response.json())
+        print(yaml.dump(response.json(), default_flow_style=False))

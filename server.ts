@@ -4,7 +4,7 @@ import cors from 'cors'
 import { prisma } from './src/db'
 import { checkUserGroup } from './src/databaseHelpers'
 import { SERVER_PORT } from './src/constants'
-import { Undefinable, Nullable } from './types/helpers'
+import { Undefinable } from './types/helpers'
 
 const app = express()
 app.use(cors({
@@ -72,13 +72,35 @@ app.get('/user/:id', async (req: Request, res: Response) => {
   const userId: User['id'] = req.params.id
 
   try {
-    // Get the user
     const foundUser = await prisma.user.findFirst({
       where: {
         id: userId
       },
       include: {
         userGroups: {
+          include: {
+            group: true
+          }
+        },
+        groupGeneralTokens: true
+      }
+    })
+    return res.status(200).json(foundUser)
+  } catch (e) {
+    return res.status(400).json({ message: 'Unable to find the user.' })
+  }
+})
+
+app.get('/user-posts/:id', async (req: Request, res: Response) => {
+  const userId: User['id'] = req.params.id
+
+  try {
+    const foundUser = await prisma.user.findFirst({
+      where: {
+        id: userId
+      },
+      include: {
+        posts: {
           include: {
             group: true
           }
