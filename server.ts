@@ -125,6 +125,66 @@ app.post('/group', async (req: Request, res: Response) => {
   }
 })
 
+app.delete('/group/:id', async (req: Request, res: Response) => {
+  const groupId: Group['id'] = req.body.id
+
+  try {
+    await prisma.group.delete({
+      where: {
+        id: groupId
+      }
+    })
+    return res.status(200).json({ message: 'Successfully deleted the group.' })
+  } catch (e) {
+    console.error(e)
+    return res.status(400).json({ message: 'Unable to delete the group.' })
+  }
+})
+
+app.get('/group-users/:id', async (req: Request, res: Response) => {
+  const groupId: Group['id'] = req.body.id
+
+  try {
+    const groupUsers = await prisma.group.findFirst({
+      where: {
+        id: groupId
+      },
+      include: {
+        groupUsers: {
+          include: {
+            user: true
+          }
+        }
+      }
+    })
+    return res.status(200).json(groupUsers)
+  } catch (e) {
+    return res.status(400).json({ message: 'Could not find the group.' })
+  }
+})
+
+app.get('/group-posts/:id', async (req: Request, res: Response) => {
+  const groupId: Group['id'] = req.body.id
+
+  try {
+    const groupPosts = await prisma.group.findFirst({
+      where: {
+        id: groupId
+      },
+      include: {
+        posts: {
+          include: {
+            author: true
+          }
+        }
+      }
+    })
+    return res.status(200).json(groupPosts)
+  } catch (e) {
+    return res.status(400).json({ message: 'Could not find the group.' })
+  }
+})
+
 app.post('/post', async (req: Request, res: Response) => {
   // Frontend must have the id of the user AND the group meaning the data structures must store it
   const postToCreate: Prisma.PostCreateManyInput = req.body
