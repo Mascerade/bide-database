@@ -3,6 +3,7 @@ import requests
 while True:
     user_input = input('What would you like to do? ').lower()
 
+    # User
     if user_input == 'create user':
         id = input('ID: ')
         username = input('Username: ')
@@ -57,6 +58,7 @@ while True:
         response = requests.get(f'http://localhost:3000/user/{id}')
         print(response.json())
 
+    # Group
     elif user_input == 'create group':
         userId = input('UserID: ')
         title = input('Title: ')
@@ -72,6 +74,25 @@ while True:
 
         print(response.json())
 
+    elif user_input == 'get group users':
+        id = input('GroupID: ')
+
+        response = requests.get(f'http://localhost:3000/group-users/{id}')
+        print(response.json())
+
+    elif user_input == 'get group posts':
+        id = input('GroupID: ')
+
+        response = requests.get(f'http://localhost:3000/group-posts/{id}')
+        print(response.json())
+
+    elif user_input == 'delete group':
+        id = input('GroupID: ')
+
+        response = requests.delete(f'http://localhost:3000/group/{id}')
+        print(response.json())
+
+    # Post
     elif user_input == 'create post':
         userId = input('User ID: ')
         groupId = input('Group ID: ')
@@ -87,6 +108,7 @@ while True:
 
         print(response.json())
 
+    # General Token
     elif user_input == 'create general token':
         id = input('Token ID: ')
         title = input('Token Title: ')
