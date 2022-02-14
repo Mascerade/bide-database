@@ -72,7 +72,7 @@ app.get('/user/:id', async (req: Request, res: Response) => {
   const userId: User['id'] = req.params.id
 
   try {
-    const foundUser = await prisma.user.findFirst({
+    const foundUser = await prisma.user.findUnique({
       where: {
         id: userId
       },
@@ -95,7 +95,7 @@ app.get('/user-posts/:id', async (req: Request, res: Response) => {
   const userId: User['id'] = req.params.id
 
   try {
-    const foundUser = await prisma.user.findFirst({
+    const foundUser = await prisma.user.findUnique({
       where: {
         id: userId
       },
@@ -118,27 +118,29 @@ app.post('/group', async (req: Request, res: Response) => {
   const groupToCreate: Omit<Prisma.GroupCreateManyInput, 'id'> = req.body.groupData
 
   try {
-    const groupCreated: Group = await prisma.group.create({
-      data: {
-        ...groupToCreate
-      }
-    })
+    await prisma.$transaction(async (prisma) => {
+      const groupCreated: Group = await prisma.group.create({
+        data: {
+          ...groupToCreate
+        }
+      })
 
-    // Add to GroupUser to indicate that the user is a part of the group
-    await prisma.groupUser.create({
-      data: {
-        userId: creatorUser,
-        groupId: groupCreated.id
-      }
-    })
+      // Add to GroupUser to indicate that the user is a part of the group
+      await prisma.groupUser.create({
+        data: {
+          userId: creatorUser,
+          groupId: groupCreated.id
+        }
+      })
 
-    // Add to GeneralTokenGroupUser to indicate that the user is the administrator of the group
-    await prisma.generalTokenGroupUser.create({
-      data: {
-        generalTokenId: 'administrator',
-        groupId: groupCreated.id,
-        userId: creatorUser
-      }
+      // Add to GeneralTokenGroupUser to indicate that the user is the administrator of the group
+      await prisma.generalTokenGroupUser.create({
+        data: {
+          generalTokenId: 'administrator',
+          groupId: groupCreated.id,
+          userId: creatorUser
+        }
+      })
     })
     return res.status(201).json({ message: 'Group was successfully created' })
   } catch (e) {
@@ -148,7 +150,7 @@ app.post('/group', async (req: Request, res: Response) => {
 })
 
 app.delete('/group/:id', async (req: Request, res: Response) => {
-  const groupId: Group['id'] = req.body.id
+  const groupId: Group['id'] = parseInt(req.params.id)
 
   try {
     await prisma.group.delete({
@@ -164,10 +166,10 @@ app.delete('/group/:id', async (req: Request, res: Response) => {
 })
 
 app.get('/group-users/:id', async (req: Request, res: Response) => {
-  const groupId: Group['id'] = req.body.id
+  const groupId: Group['id'] = parseInt(req.params.id)
 
   try {
-    const groupUsers = await prisma.group.findFirst({
+    const groupUsers = await prisma.group.findUnique({
       where: {
         id: groupId
       },
@@ -189,7 +191,7 @@ app.get('/group-posts/:id', async (req: Request, res: Response) => {
   const groupId: Group['id'] = req.body.id
 
   try {
-    const groupPosts = await prisma.group.findFirst({
+    const groupPosts = await prisma.group.findUnique({
       where: {
         id: groupId
       },
@@ -209,7 +211,7 @@ app.get('/group-posts/:id', async (req: Request, res: Response) => {
 
 app.post('/post', async (req: Request, res: Response) => {
   // Frontend must have the id of the user AND the group meaning the data structures must store it
-  const postToCreate: Prisma.PostCreateManyInput = req.body
+  const postToCreate: Omit<Prisma.PostCreateManyInput, 'id'> = req.body
 
   try {
     // Make sure the user is part of the group
