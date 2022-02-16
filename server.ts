@@ -7,13 +7,15 @@ import { SERVER_PORT } from './src/constants'
 import { Undefinable } from './types/helpers'
 
 const app = express()
-app.use(cors({
-  origin: '*'
-}))
+app.use(
+  cors({
+    origin: '*'
+  })
+)
 app.use(express.json())
 
 app.post('/user', async (req: Request, res: Response) => {
-  const userToCreate: Prisma.UserCreateManyInput = req.body;
+  const userToCreate: Prisma.UserCreateManyInput = req.body
 
   try {
     // Create a user
@@ -115,7 +117,8 @@ app.get('/user-posts/:id', async (req: Request, res: Response) => {
 
 app.post('/group', async (req: Request, res: Response) => {
   const creatorUser: User['id'] = req.body.userId
-  const groupToCreate: Omit<Prisma.GroupCreateManyInput, 'id'> = req.body.groupData
+  const groupToCreate: Omit<Prisma.GroupCreateManyInput, 'id'> =
+    req.body.groupData
 
   try {
     await prisma.$transaction(async (prisma) => {
@@ -215,7 +218,10 @@ app.post('/post', async (req: Request, res: Response) => {
 
   try {
     // Make sure the user is part of the group
-    const createCheck = await checkUserGroup(postToCreate.authorId, postToCreate.groupId)
+    const createCheck = await checkUserGroup(
+      postToCreate.authorId,
+      postToCreate.groupId
+    )
     console.log(createCheck)
 
     if (createCheck) {
@@ -248,7 +254,9 @@ app.post('/general-token', async (req: Request, res: Response) => {
       }
     })
 
-    return res.status(201).json({ message: 'General token was successfully created' })
+    return res
+      .status(201)
+      .json({ message: 'General token was successfully created' })
   } catch (e) {
     console.error(e)
     res.status(400).json({ message: 'Unable to create the general token.' })
@@ -258,7 +266,9 @@ app.post('/general-token', async (req: Request, res: Response) => {
 app.put('/general-token/:id', async (req: Request, res: Response) => {
   // For now, the ID of the token cannot be changed
   const tokenId: GeneralToken['id'] = req.params.id
-  const tokenToUpdate: Undefinable<Omit<Prisma.GeneralTokenCreateManyInput, 'id'>> = req.body
+  const tokenToUpdate: Undefinable<
+    Omit<Prisma.GeneralTokenCreateManyInput, 'id'>
+  > = req.body
 
   try {
     // Update the token
@@ -270,10 +280,14 @@ app.put('/general-token/:id', async (req: Request, res: Response) => {
         ...tokenToUpdate
       }
     })
-    return res.status(201).json({ message: 'General token was successfully updated.' })
+    return res
+      .status(201)
+      .json({ message: 'General token was successfully updated.' })
   } catch (e) {
     console.log(e)
-    return res.status(400).json({ message: 'Unable to update the general token.' })
+    return res
+      .status(400)
+      .json({ message: 'Unable to update the general token.' })
   }
 })
 
