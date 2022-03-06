@@ -19,16 +19,21 @@ app.post('/user', async (req: Request, res: Response) => {
 
   try {
     // Create a user
-    await prisma.user.create({
+    const userCreated = await prisma.user.create({
       data: {
         ...userToCreate
       }
     })
     // Created the user
-    return res.status(201).json({ message: 'User was successfully created' })
+    return res.status(201).json({
+      user: userCreated,
+      message: 'User was successfully created'
+    })
   } catch (e) {
     console.error(e)
-    return res.status(400).json({ message: 'Unable to create new user.' })
+    return res
+      .status(400)
+      .json({ user: undefined, message: 'Unable to create new user.' })
   }
 })
 
@@ -87,10 +92,57 @@ app.get('/user/:id', async (req: Request, res: Response) => {
         groupGeneralTokens: true
       }
     })
-    return res.status(200).json(foundUser)
+    if (foundUser == null) {
+      return res.status(404).json({ user: null, message: 'User not found.' })
+    }
+    return res.status(200).json({ user: foundUser })
   } catch (e) {
-    return res.status(400).json({ message: 'Unable to find the user.' })
+    return res
+      .status(400)
+      .json({ user: null, message: 'Unable to find the user.' })
   }
+})
+
+app.get('/validate-new-user', async (req: Request, res: Response) => {
+  // Know that the ID and username must be strings
+  let userId = req.query.userId as string
+  let username = req.query.username as string
+
+  // Will append the different errors found to the lists
+  let userIdErrors: Array<string> = []
+  let usernameErrors: Array<string> = []
+
+  // Check to make sure the user ID does not already exists
+  try {
+    const user = await prisma.user.findUnique({
+      where: {
+        id: userId
+      }
+    })
+    if (user != null) {
+      userIdErrors.push('ID already exists.')
+    }
+  } catch (e) {
+    userIdErrors.push(`Validation issue with ID.`)
+  }
+
+  // Check to make sure the user's username does not already exist
+  try {
+    const user = await prisma.user.findUnique({
+      where: {
+        username: username
+      }
+    })
+    if (user != null) {
+      usernameErrors.push('Username already exists.')
+    }
+  } catch (e) {
+    usernameErrors.push('Validation issue with username.')
+  }
+
+  return res
+    .status(200)
+    .json({ userIdErrors: userIdErrors, usernameErrors: usernameErrors })
 })
 
 app.get('/user-posts/:id', async (req: Request, res: Response) => {
