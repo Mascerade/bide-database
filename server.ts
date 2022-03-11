@@ -77,7 +77,6 @@ app.put('/user/:id', async (req: Request, res: Response) => {
 
 app.get('/user/:id', async (req: Request, res: Response) => {
   const userId: User['id'] = req.params.id
-
   try {
     const foundUser = await prisma.user.findUnique({
       where: {
@@ -217,6 +216,35 @@ app.delete('/group/:id', async (req: Request, res: Response) => {
   } catch (e) {
     console.error(e)
     return res.status(400).json({ message: 'Unable to delete the group.' })
+  }
+})
+
+app.get('/group/:id', async (req: Request, res: Response) => {
+  const groupId: Group['id'] = parseInt(req.params.id)
+
+  try {
+    const group = await prisma.group.findUnique({
+      where: {
+        id: groupId
+      },
+      include: {
+        groupUsers: {
+          include: {
+            user: true
+          }
+        },
+        posts: true
+      }
+    })
+    if (group) {
+      return res.status(200).json({ group: group })
+    } else {
+      return res
+        .status(404)
+        .json({ message: `Could not find group with ID ${groupId}` })
+    }
+  } catch (e) {
+    return res.status(400).json({ message: 'Could not find the group.' })
   }
 })
 

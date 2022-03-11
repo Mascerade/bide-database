@@ -68,17 +68,23 @@ while True:
     # Group
     elif user_input == 'create group':
         userId = input('UserID: ')
-        title = input('Title: ')
+        name = input('Name: ')
         description = input('Description: ')
 
         response = requests.post('http://localhost:3000/group', json={
             'userId': userId,
             'groupData': {
-                'title': title,
+                'name': name,
                 'description': description
             }
         })
 
+        print(yaml.dump(response.json(), default_flow_style=False))
+
+    elif user_input == 'get group':
+        id = input('GroupID: ')
+
+        response = requests.get(f'http://localhost:3000/group/{id}')
         print(yaml.dump(response.json(), default_flow_style=False))
 
     elif user_input == 'get group users':
