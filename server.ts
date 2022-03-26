@@ -1,17 +1,42 @@
 import { GeneralToken, Group, Prisma, User } from '@prisma/client'
 import express, { Request, Response } from 'express'
+import sessions from 'express-session'
 import cors from 'cors'
 import { prisma } from './src/db'
 import { checkUserGroup } from './src/databaseHelpers'
-import { SERVER_PORT } from './src/constants'
+import { SERVER_PORT, COOKIE_SECRET } from './src/constants'
 import { Undefinable } from './types/helpers'
 
+declare module 'express-session' {
+  interface SessionData {
+    userId: string
+  }
+}
+
 const app = express()
+
+const sessConfig: sessions.SessionOptions = {
+  secret: COOKIE_SECRET,
+  saveUninitialized: false,
+  resave: false,
+  cookie: {
+    maxAge: 1000 * 60 * 60 * 24 * 7 // Max age is set to a week
+  }
+}
+
+if (app.get('production') == 'production') {
+  sessConfig.cookie!.secure = true
+}
+
+app.use(sessions(sessConfig))
+
 app.use(
   cors({
-    origin: '*'
+    origin: 'http://localhost:8080',
+    credentials: true
   })
 )
+
 app.use(express.json())
 
 app.post('/user', async (req: Request, res: Response) => {
@@ -24,6 +49,9 @@ app.post('/user', async (req: Request, res: Response) => {
         ...userToCreate
       }
     })
+
+    req.session.userId = userCreated.id
+
     // Created the user
     return res.status(201).json({
       user: userCreated,
@@ -72,6 +100,95 @@ app.put('/user/:id', async (req: Request, res: Response) => {
     return res.status(201).json({ message: 'User was successfully updated.' })
   } catch (e) {
     return res.status(400).json({ message: 'Unable to update the user.' })
+  }
+})
+
+app.get('/user-initial', async (req: Request, res: Response) => {
+  try {
+    if (req.session.userId) {
+      const user = await prisma.user.findUnique({
+        where: {
+          id: req.session.userId
+        },
+        include: {
+          userGroups: {
+            include: {
+              group: true
+            }
+          },
+          groupGeneralTokens: true
+        }
+      })
+
+      if (user) {
+        return res.status(200).json({ user: user })
+      }
+    } else {
+      return res.status(404).json({ user: null, message: 'Cookie not set' })
+    }
+  } catch (e) {
+    return res
+      .status(400)
+      .json({ user: null, message: 'Unable to create new user.' })
+  }
+})
+
+app.get('/user-cookie-check', async (req: Request, res: Response) => {
+  try {
+    console.log('within user-cookie-check')
+    if (req.session.userId) {
+      const user = await prisma.user.findUnique({
+        where: {
+          id: req.session.userId
+        }
+      })
+      console.log('got user: ')
+      console.log(user)
+
+      if (user) {
+        return res.status(200).json({ message: 'Found the user.' })
+      } else {
+        return res.status(404).json({ message: 'User not found.' })
+      }
+    } else {
+      console.log("didn't find user")
+      return res.status(404).json({ message: 'Cookie not set' })
+    }
+  } catch (e) {
+    console.log('server error')
+    return res
+      .status(500)
+      .json({ message: 'Something went wrong with the server.' })
+  }
+})
+
+app.get('/user-login/:id', async (req: Request, res: Response) => {
+  const userId: User['id'] = req.params.id
+  try {
+    const foundUser = await prisma.user.findUnique({
+      where: {
+        id: userId
+      },
+      include: {
+        userGroups: {
+          include: {
+            group: true
+          }
+        },
+        groupGeneralTokens: true
+      }
+    })
+    if (foundUser == null) {
+      return res.status(404).json({ user: null, message: 'User not found.' })
+    }
+
+    // Set the cookie
+    req.session.userId = foundUser.id
+    return res.status(200).json({ user: foundUser })
+  } catch (e) {
+    return res
+      .status(400)
+      .json({ user: null, message: 'Unable to find the user.' })
   }
 })
 
