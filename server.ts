@@ -49,7 +49,8 @@ app.post('/user', async (req: Request, res: Response) => {
         ...userToCreate
       }
     })
-
+    
+    // Set the cookie
     req.session.userId = userCreated.id
 
     // Created the user
@@ -178,12 +179,14 @@ app.get('/user-login/:id', async (req: Request, res: Response) => {
         groupGeneralTokens: true
       }
     })
+
     if (foundUser == null) {
       return res.status(404).json({ user: null, message: 'User not found.' })
     }
 
     // Set the cookie
     req.session.userId = foundUser.id
+    
     return res.status(200).json({ user: foundUser })
   } catch (e) {
     return res
