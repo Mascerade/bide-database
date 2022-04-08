@@ -18,4 +18,7 @@
 
   - Make sure email and username are unique
 
-- Prefer username over IDs as the "universal" identifier. This makes sense because username should be used on the frontend and in the routes, not the ID
+- Prefer UUID over auto-generating primary keys
+
+- Prefer using a username as the unique identifier of a user
+  - Usernames are just convenient for the frontend because the routes use
