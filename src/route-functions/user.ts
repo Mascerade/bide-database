@@ -35,7 +35,7 @@ export const createUser: RequestHandler = async (req, res) => {
 }
 
 export const deleteUser: RequestHandler = async (req, res) => {
-  const userToDelete: User['id'] = req.params.id
+  const userToDelete: User['id'] = parseInt(req.params.id, 10)
 
   try {
     // Delete the user
@@ -54,7 +54,7 @@ export const deleteUser: RequestHandler = async (req, res) => {
 }
 
 export const updateUser: RequestHandler = async (req, res) => {
-  const userToUpdate: User['id'] = req.params.id
+  const userToUpdate: User['id'] = parseInt(req.params.id, 10)
   const newUserInformation: Undefinable<Omit<User, 'id'>> = req.body
 
   try {
@@ -75,8 +75,7 @@ export const updateUser: RequestHandler = async (req, res) => {
 
 export const getUserFromCookie: RequestHandler = async (req, res) => {
   if (req.session.userId) {
-    const user = getAllUniqueUser({ id: req.session.userId })
-
+    const user = await getAllUniqueUser({ id: req.session.userId })
     if (user) {
       return res.status(200).json({ user: user })
     } else {
@@ -103,8 +102,8 @@ export const cookieCheck: RequestHandler = async (req, res) => {
 }
 
 export const login: RequestHandler = async (req, res) => {
-  const userId: User['id'] = req.params.id
-  const foundUser = await getAllUniqueUser({ id: userId })
+  const email: User['email'] = req.query.email as string
+  const foundUser = await getAllUniqueUser({ email: email })
 
   // User was not found
   if (foundUser == null) {
@@ -117,8 +116,13 @@ export const login: RequestHandler = async (req, res) => {
   return res.status(200).json({ user: foundUser })
 }
 
+export const logout: RequestHandler = async (req, res) => {
+  req.session.userId = undefined
+  return res.status(200).json({ message: 'Successfully logged out the user.' })
+}
+
 export const getUserFromId: RequestHandler = async (req, res, next) => {
-  const userId: User['id'] = req.params.id
+  const userId: User['id'] = parseInt(req.params.id)
   const foundUser = await getAllUniqueUser({ id: userId })
 
   if (foundUser == null) {
@@ -130,30 +134,25 @@ export const getUserFromId: RequestHandler = async (req, res, next) => {
 
 export const validateNewUser: RequestHandler = async (req, res) => {
   // Know that the ID and username must be strings
-  let userId = req.query.userId as string
+  let email = req.query.email as string
   let username = req.query.username as string
 
   // Will append the different errors found to the lists
-  let userIdErrors: Array<string> = []
+  let emailErrors: Array<string> = []
   let usernameErrors: Array<string> = []
 
   // Check to make sure the user ID does not already exists
   try {
-    if ((await checkExistenceOfUser({ id: userId })) != null) {
-      userIdErrors.push('ID already exists.')
+    if (await checkExistenceOfUser({ email: email })) {
+      emailErrors.push('Email already exists.')
     }
   } catch (e) {
-    userIdErrors.push(`Validation issue with ID.`)
+    emailErrors.push(`Validation issue with ID.`)
   }
 
   // Check to make sure the user's username does not already exist
   try {
-    const user = await prisma.user.findUnique({
-      where: {
-        username: username
-      }
-    })
-    if (user != null) {
+    if (await checkExistenceOfUser({ username: username })) {
       usernameErrors.push('Username already exists.')
     }
   } catch (e) {
@@ -162,11 +161,11 @@ export const validateNewUser: RequestHandler = async (req, res) => {
 
   return res
     .status(200)
-    .json({ userIdErrors: userIdErrors, usernameErrors: usernameErrors })
+    .json({ emailErrors: emailErrors, usernameErrors: usernameErrors })
 }
 
 export const getUserPosts: RequestHandler = async (req, res) => {
-  const userId: User['id'] = req.params.id
+  const userId: User['id'] = parseInt(req.params.id, 10)
 
   try {
     const foundUser = await prisma.user.findUnique({

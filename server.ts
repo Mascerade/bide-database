@@ -1,4 +1,5 @@
 import express, { ErrorRequestHandler } from 'express'
+import { User } from '@prisma/client'
 import sessions from 'express-session'
 import cors from 'cors'
 import { SERVER_PORT, COOKIE_SECRET } from './src/constants'
@@ -9,7 +10,7 @@ import * as GeneralTokenRouteFunctions from './src/route-functions/general-token
 
 declare module 'express-session' {
   interface SessionData {
-    userId: string
+    userId: User['id']
   }
 }
 
@@ -49,10 +50,11 @@ app.delete('/user/:id', UserRouteFunctions.deleteUser)
 app.put('/user/:id', UserRouteFunctions.updateUser)
 app.get('/user/initial-load', UserRouteFunctions.getUserFromCookie)
 app.get('/user/check-cookie', UserRouteFunctions.cookieCheck)
-app.get('/user/login/:id', UserRouteFunctions.login)
-app.get('/user/:id', UserRouteFunctions.getUserFromId)
+app.get('/user/login', UserRouteFunctions.login)
+app.get('/user/logout', UserRouteFunctions.logout)
 app.get('/user/validate-new-user', UserRouteFunctions.validateNewUser)
 app.get('/user/posts/:id', UserRouteFunctions.getUserPosts)
+app.get('/user/:id', UserRouteFunctions.getUserFromId)
 
 // Group routes
 app.post('/group', GroupRouteFunctions.createGroup)

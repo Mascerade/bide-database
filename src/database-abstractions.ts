@@ -32,6 +32,7 @@ export const checkUserGroup = async function (
 
 export const checkExistenceOfUser = async (conditions: {
   id?: User['id']
+  email?: User['email']
   username?: User['username']
 }): Promise<Boolean> => {
   try {
@@ -52,6 +53,7 @@ export const checkExistenceOfUser = async (conditions: {
 
 export const getUserProfileInformation = async (conditions: {
   id?: User['id']
+  email: User['email']
   username?: User['username']
 }) => {
   const user = await prisma.user.findUnique({
@@ -63,6 +65,7 @@ export const getUserProfileInformation = async (conditions: {
 
 export const getAllUniqueUser = async (conditions: {
   id?: User['id']
+  email?: User['email']
   username?: User['username']
 }) => {
   try {
@@ -82,6 +85,7 @@ export const getAllUniqueUser = async (conditions: {
         }
       }
     })
+
     return user
   } catch (e) {
     return null

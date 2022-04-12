@@ -12,9 +12,8 @@ datasource db {
 }
 
 model User {
-  // Provide the ID for a user so that this model can
-  // be pivoted to using Firebase later on
-  id                 String                  @id
+  id                 Int                     @id @default(autoincrement())
+  email              String                  @unique
   username           String                  @unique
   firstName          String?
   lastName           String?
@@ -29,7 +28,7 @@ model Post {
   title    String
   content  String
   author   User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
-  authorId String
+  authorId Int
   group    Group    @relation(fields: [groupId], references: [id], onDelete: Cascade)
   groupId  Int
 }
@@ -53,7 +52,7 @@ model GeneralToken {
 model GroupUser {
   id         Int      @id @default(autoincrement())
   user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId     String
+  userId     Int
   group      Group    @relation(fields: [groupId], references: [id], onDelete: Cascade)
   groupId    Int
   dateJoined DateTime @default(now())
@@ -64,7 +63,7 @@ model GroupUser {
 model GeneralTokenGroupUser {
   id             Int          @id @default(autoincrement())
   user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId         String
+  userId         Int
   group          Group        @relation(fields: [groupId], references: [id], onDelete: Cascade)
   groupId        Int
   generalToken   GeneralToken @relation(fields: [generalTokenId], references: [id])
