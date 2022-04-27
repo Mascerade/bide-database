@@ -2,16 +2,20 @@ import { Prisma, User } from '@prisma/client'
 import { RequestHandler, ErrorRequestHandler, Request, Response } from 'express'
 import { prisma } from '../db'
 import { Undefinable } from '../../types/helpers'
+import bcrypt from 'bcrypt'
 import {
   getAllUniqueUser,
   checkExistenceOfUser
 } from '../database-abstractions'
 
+const SALT_ROUNDS = 10
+
 export const createUser: RequestHandler = async (req, res) => {
   const userToCreate: Prisma.UserCreateManyInput = req.body
 
   try {
-    // Create a user
+    const hash = await bcrypt.hash(userToCreate.password, SALT_ROUNDS)
+    userToCreate.password = hash
     const userCreated = await prisma.user.create({
       data: {
         ...userToCreate
@@ -103,6 +107,7 @@ export const cookieCheck: RequestHandler = async (req, res) => {
 
 export const login: RequestHandler = async (req, res) => {
   const email: User['email'] = req.query.email as string
+  const password: User['password'] = req.query.password as string
   const foundUser = await getAllUniqueUser({ email: email })
 
   // User was not found
@@ -110,10 +115,14 @@ export const login: RequestHandler = async (req, res) => {
     return res.status(404).json({ user: null, message: 'User not found.' })
   }
 
-  // Set the cookie
-  req.session.userId = foundUser.id
-
-  return res.status(200).json({ user: foundUser })
+  const passwordMatches = await bcrypt.compare(password, foundUser.password)
+  if (passwordMatches) {
+    // Set the cookie
+    req.session.userId = foundUser.id
+    return res.status(200).json({ user: foundUser })
+  } else {
+    return res.status(401).json({ user: null, message: 'Invalid password.' })
+  }
 }
 
 export const logout: RequestHandler = async (req, res) => {
