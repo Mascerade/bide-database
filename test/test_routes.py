@@ -1,3 +1,4 @@
+from email.policy import default
 import requests
 import yaml
 
@@ -6,23 +7,18 @@ while True:
 
     # User
     if user_input == 'create user':
-        id = input('User ID: ')
+        email = input('Email: ')
         username = input('Username: ')
         first_name = input('First Name: ')
         last_name = input('Last Name: ')
-
-        if first_name == '':
-            first_name = None
-            last_name = None
-
-        elif last_name == '':
-            last_name == None
+        password = input('Password: ')
 
         response = requests.post('http://localhost:3000/user', json={
-            'id': id,
+            'email': email,
             'username': username,
             'firstName': first_name,
-            'lastName': last_name
+            'lastName': last_name,
+            'password': password
         })
 
         print(yaml.dump(response.json(), default_flow_style=False))
@@ -67,43 +63,64 @@ while True:
 
     # Group
     elif user_input == 'create group':
-        userId = input('UserID: ')
+        email = input('Email: ')
+        password = input('Password: ')
         name = input('Name: ')
+        title = input('Title: ')
         description = input('Description: ')
 
-        response = requests.post('http://localhost:3000/group', json={
-            'userId': userId,
+        sess = requests.Session()
+        loginData = { 'email': email, 'password': password }
+        
+        loginResponse = sess.get('http://localhost:3000/user/login', params=loginData)
+        print('Login Response:')
+        print(yaml.dump(loginResponse.json(), default_flow_style=False))
+
+        groupResponse = sess.post('http://localhost:3000/group', json={
             'groupData': {
                 'name': name,
+                'title': title,
                 'description': description
             }
         })
 
-        print(yaml.dump(response.json(), default_flow_style=False))
+        print('Group Response:')
+        print(yaml.dump(groupResponse.json(), default_flow_style=False))
 
     elif user_input == 'get group':
-        id = input('GroupID: ')
+        name = input('Group Name: ')
 
-        response = requests.get(f'http://localhost:3000/group/{id}')
+        response = requests.get(f'http://localhost:3000/group/{name}')
         print(yaml.dump(response.json(), default_flow_style=False))
 
     elif user_input == 'get group users':
-        id = input('GroupID: ')
+        name = input('Group Name: ')
 
-        response = requests.get(f'http://localhost:3000/group-users/{id}')
+        response = requests.get(f'http://localhost:3000/group-users/{name}')
         print(yaml.dump(response.json(), default_flow_style=False))
 
     elif user_input == 'get group posts':
-        id = input('GroupID: ')
+        name = input('Group Name: ')
 
-        response = requests.get(f'http://localhost:3000/group-posts/{id}')
+        response = requests.get(f'http://localhost:3000/group-posts/{name}')
         print(yaml.dump(response.json(), default_flow_style=False))
 
     elif user_input == 'delete group':
-        id = input('GroupID: ')
+        email = input('Email: ')
+        password = input('Password: ')
+        id = input('Group ID: ')
 
-        response = requests.delete(f'http://localhost:3000/group/{id}')
-        print(yaml.dump(response.json(), default_flow_style=False))
+        sess = requests.Session()
+        loginData = { 'email': email, 'password': password }
+        
+        loginResponse = sess.get('http://localhost:3000/user/login', params=loginData)
+        print('Login Response:')
+        print(yaml.dump(loginResponse.json(), default_flow_style=False))
+
+        groupResponse = sess.delete(f'http://localhost:3000/group/{id}')
+
+        print('Group Response:')
+        print(yaml.dump(groupResponse.json(), default_flow_style=False))
 
     # Post
     elif user_input == 'create post':

@@ -1,46 +1,50 @@
 import { Group, Prisma, User } from '@prisma/client'
-import { Request, Response } from 'express'
+import { Request, RequestHandler, Response } from 'express'
+import { createGroup } from '../database-abstractions'
 import { prisma } from '../db'
 
-export const createGroup = async (req: Request, res: Response) => {
-  const creatorUser: User['id'] = req.body.userId
-  const groupToCreate: Omit<Prisma.GroupCreateManyInput, 'id'> =
-    req.body.groupData
+export const createGroupUsingUserCookie: RequestHandler = async (req, res) => {
+  const userId = req.session.userId
+  const groupToCreate = req.body.groupData
 
-  try {
-    await prisma.$transaction(async (prisma) => {
-      const groupCreated: Group = await prisma.group.create({
-        data: {
-          ...groupToCreate
-        }
-      })
+  if (!userId) {
+    return res.status(401).json({ message: 'User not logged in.' })
+  }
 
-      // Add to GroupUser to indicate that the user is a part of the group
-      await prisma.groupUser.create({
-        data: {
-          userId: creatorUser,
-          groupId: groupCreated.id
-        }
-      })
-
-      // Add to GeneralTokenGroupUser to indicate that the user is the administrator of the group
-      await prisma.generalTokenGroupUser.create({
-        data: {
-          generalTokenId: 'administrator',
-          groupId: groupCreated.id,
-          userId: creatorUser
-        }
-      })
-    })
+  const result = await createGroup(userId, groupToCreate)
+  if (result.success) {
     return res.status(201).json({ message: 'Group was successfully created' })
-  } catch (e) {
-    console.error(e)
+  } else {
     return res.status(400).json({ message: 'Unable to create new group.' })
   }
 }
 
-export const deleteGroup = async (req: Request, res: Response) => {
+export const deleteGroup: RequestHandler = async (req, res) => {
+  const userId = req.session.userId
   const groupId: Group['id'] = parseInt(req.params.id)
+
+  if (!userId) {
+    return res.status(401).json({ message: 'User not logged in.' })
+  }
+
+  try {
+    const exists = await prisma.generalTokenGroupUser.findFirst({
+      where: {
+        userId: userId,
+        groupId: groupId,
+        generalTokenId: 'administrator'
+      }
+    })
+
+    if (!exists) {
+      return res.status(401).json({
+        message: 'User does not have permission to delete this group.'
+      })
+    }
+  } catch (e) {
+    console.log(e)
+    throw e
+  }
 
   try {
     await prisma.group.delete({
@@ -55,13 +59,13 @@ export const deleteGroup = async (req: Request, res: Response) => {
   }
 }
 
-export const getGroup = async (req: Request, res: Response) => {
-  const groupId: Group['id'] = parseInt(req.params.id)
+export const getGroup: RequestHandler = async (req: Request, res: Response) => {
+  const groupName: Group['name'] = req.params.groupName
 
   try {
     const group = await prisma.group.findUnique({
       where: {
-        id: groupId
+        name: groupName
       },
       include: {
         groupUsers: {
@@ -77,20 +81,20 @@ export const getGroup = async (req: Request, res: Response) => {
     } else {
       return res
         .status(404)
-        .json({ message: `Could not find group with ID ${groupId}` })
+        .json({ message: `Could not find group with name of ${groupName}` })
     }
   } catch (e) {
     return res.status(400).json({ message: 'Could not find the group.' })
   }
 }
 
-export const getGroupUsers = async (req: Request, res: Response) => {
-  const groupId: Group['id'] = parseInt(req.params.id)
+export const getGroupUsers: RequestHandler = async (req, res) => {
+  const groupName: Group['name'] = req.params.name
 
   try {
     const groupUsers = await prisma.group.findUnique({
       where: {
-        id: groupId
+        name: groupName
       },
       include: {
         groupUsers: {
@@ -106,13 +110,13 @@ export const getGroupUsers = async (req: Request, res: Response) => {
   }
 }
 
-export const getGroupPosts = async (req: Request, res: Response) => {
-  const groupId: Group['id'] = req.body.id
+export const getGroupPosts: RequestHandler = async (req, res) => {
+  const groupName: Group['name'] = req.params.name
 
   try {
     const groupPosts = await prisma.group.findUnique({
       where: {
-        id: groupId
+        name: groupName
       },
       include: {
         posts: {

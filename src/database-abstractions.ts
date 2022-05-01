@@ -103,3 +103,39 @@ export const getUserFromUsername = async (
 
   return foundUser
 }
+
+export const createGroup = async (
+  creatorUser: User['id'],
+  groupToCreate: Omit<Prisma.GroupCreateManyInput, 'id'>
+): Promise<{ success: boolean }> => {
+  try {
+    await prisma.$transaction(async (prisma) => {
+      const groupCreated: Group = await prisma.group.create({
+        data: {
+          ...groupToCreate
+        }
+      })
+
+      // Add to GroupUser to indicate that the user is a part of the group
+      await prisma.groupUser.create({
+        data: {
+          userId: creatorUser,
+          groupId: groupCreated.id
+        }
+      })
+
+      // Add to GeneralTokenGroupUser to indicate that the user is the administrator of the group
+      await prisma.generalTokenGroupUser.create({
+        data: {
+          generalTokenId: 'administrator',
+          groupId: groupCreated.id,
+          userId: creatorUser
+        }
+      })
+    })
+    return { success: true }
+  } catch (e) {
+    console.error(e)
+    throw e
+  }
+}

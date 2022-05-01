@@ -57,11 +57,11 @@ app.get('/user/posts/:id', UserRouteFunctions.getUserPosts)
 app.get('/user/:id', UserRouteFunctions.getUserFromId)
 
 // Group routes
-app.post('/group', GroupRouteFunctions.createGroup)
+app.post('/group', GroupRouteFunctions.createGroupUsingUserCookie)
 app.delete('/group/:id', GroupRouteFunctions.deleteGroup)
-app.get('/group/:id', GroupRouteFunctions.getGroup)
-app.get('/group/users/:id', GroupRouteFunctions.getGroupUsers)
-app.get('/group/posts/:id', GroupRouteFunctions.getGroupPosts)
+app.get('/group/:name', GroupRouteFunctions.getGroup)
+app.get('/group/users/:name', GroupRouteFunctions.getGroupUsers)
+app.get('/group/posts/:name', GroupRouteFunctions.getGroupPosts)
 
 // Post routes
 app.post('/post', PostRouteFunctions.createPost)
