@@ -5,6 +5,8 @@ import { checkUserGroup } from '../database-abstractions'
 
 export const createPost = async (req: Request, res: Response) => {
   // Frontend must have the id of the user AND the group meaning the data structures must store it
+  req.body.authorId = parseInt(req.body.authorId)
+  req.body.groupId = parseInt(req.body.groupId)
   const postToCreate: Omit<Prisma.PostCreateManyInput, 'id'> = req.body
 
   try {
@@ -26,7 +28,7 @@ export const createPost = async (req: Request, res: Response) => {
       return res.status(201).json({ message: 'Post was successfully created' })
     } else {
       // If the user tried to create a post in a group they are not a part of
-      return res.status(409).json({ message: 'User not part of the group.' })
+      return res.status(403).json({ message: 'User not part of the group.' })
     }
   } catch (e) {
     console.error(e)

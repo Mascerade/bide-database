@@ -130,7 +130,7 @@ while True:
         content = input('Content: ')
 
         response = requests.post('http://localhost:3000/post', json={
-            'authorId': userId,
+            'authorId': int(userId),
             'groupId': int(groupId),
             'title': title,
             'content': content

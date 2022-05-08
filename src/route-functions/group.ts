@@ -60,7 +60,7 @@ export const deleteGroup: RequestHandler = async (req, res) => {
 }
 
 export const getGroup: RequestHandler = async (req: Request, res: Response) => {
-  const groupName: Group['name'] = req.params.groupName
+  const groupName: Group['name'] = req.params.name
 
   try {
     const group = await prisma.group.findUnique({
@@ -73,7 +73,11 @@ export const getGroup: RequestHandler = async (req: Request, res: Response) => {
             user: true
           }
         },
-        posts: true
+        posts: {
+          include: {
+            author: true
+          }
+        }
       }
     })
     if (group) {
@@ -84,6 +88,7 @@ export const getGroup: RequestHandler = async (req: Request, res: Response) => {
         .json({ message: `Could not find group with name of ${groupName}` })
     }
   } catch (e) {
+    console.log(e)
     return res.status(400).json({ message: 'Could not find the group.' })
   }
 }
@@ -104,7 +109,7 @@ export const getGroupUsers: RequestHandler = async (req, res) => {
         }
       }
     })
-    return res.status(200).json(groupUsers)
+    return res.status(200).json({ groupUsers: groupUsers })
   } catch (e) {
     return res.status(400).json({ message: 'Could not find the group.' })
   }
@@ -126,7 +131,7 @@ export const getGroupPosts: RequestHandler = async (req, res) => {
         }
       }
     })
-    return res.status(200).json(groupPosts)
+    return res.status(200).json({ groupPosts: groupPosts })
   } catch (e) {
     return res.status(400).json({ message: 'Could not find the group.' })
   }

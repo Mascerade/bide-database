@@ -59,9 +59,9 @@ app.get('/user/:id', UserRouteFunctions.getUserFromId)
 // Group routes
 app.post('/group', GroupRouteFunctions.createGroupUsingUserCookie)
 app.delete('/group/:id', GroupRouteFunctions.deleteGroup)
-app.get('/group/:name', GroupRouteFunctions.getGroup)
 app.get('/group/users/:name', GroupRouteFunctions.getGroupUsers)
 app.get('/group/posts/:name', GroupRouteFunctions.getGroupPosts)
+app.get('/group/:name', GroupRouteFunctions.getGroup)
 
 // Post routes
 app.post('/post', PostRouteFunctions.createPost)

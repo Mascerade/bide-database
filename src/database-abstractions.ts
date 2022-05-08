@@ -6,24 +6,16 @@ export const checkUserGroup = async function (
   groupId: Group['id']
 ): Promise<Boolean> {
   // Find the user and return the group that the post is associated with
-  // We can the check that groups is not null (meaning that they belong to the groupa and can post.)
-
-  const foundUser = await prisma.user.findUnique({
+  // We can the check that groups is not null (meaning that they belong to the group and can post.)
+  const foundUser = await prisma.groupUser.findUnique({
     where: {
-      id: userId
-    },
-    include: {
-      userGroups: {
-        where: {
-          id: groupId
-        }
-      }
+      userId_groupId: { userId, groupId }
     }
   })
 
   console.log(foundUser)
 
-  if (foundUser?.userGroups[0] != null) {
+  if (foundUser != null) {
     return true
   } else {
     return false
