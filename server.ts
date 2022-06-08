@@ -64,6 +64,7 @@ app.get('/group/posts/:name', GroupRouteFunctions.getGroupPosts)
 app.get('/group/:name', GroupRouteFunctions.getGroup)
 
 // Post routes
+app.post('/post', PostRouteFunctions.groupNameToId)
 app.post('/post', PostRouteFunctions.createPost)
 
 // General Token routes

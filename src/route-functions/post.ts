@@ -1,11 +1,25 @@
 import { Prisma } from '@prisma/client'
-import { Request, Response } from 'express'
+import { Request, RequestHandler, Response } from 'express'
 import { prisma } from '../db'
 import { checkUserGroup } from '../database-abstractions'
+import { nextTick } from 'process'
+
+export const groupNameToId: RequestHandler = async (req, res, next) => {
+  const groupName: string = req.body.groupName
+  const group = await prisma.group.findUnique({
+    where: {
+      name: groupName
+    }
+  })
+  delete req.body.groupName
+  req.body.groupId = group?.id
+  next()
+}
 
 export const createPost = async (req: Request, res: Response) => {
+  console.log(req.body)
   // Frontend must have the id of the user AND the group meaning the data structures must store it
-  req.body.authorId = parseInt(req.body.authorId)
+  req.body.authorId = req.session.userId
   req.body.groupId = parseInt(req.body.groupId)
   const postToCreate: Omit<Prisma.PostCreateManyInput, 'id'> = req.body
 
