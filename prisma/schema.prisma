@@ -21,6 +21,7 @@ model User {
   posts              Post[]
   userGroups         GroupUser[]
   groupGeneralTokens GeneralTokenGroupUser[]
+  JoinGroupRequests  JoinGroupRequest[]
 }
 
 model Post {
@@ -42,6 +43,7 @@ model Group {
   posts             Post[]
   groupUsers        GroupUser[]
   userGeneralTokens GeneralTokenGroupUser[]
+  joinGroupRequests JoinGroupRequest[]
 }
 
 model GeneralToken {
@@ -73,4 +75,15 @@ model GeneralTokenGroupUser {
   dateAssigned   DateTime     @default(now())
 
   @@unique([userId, groupId, generalTokenId])
+}
+
+model JoinGroupRequest {
+  id               Int      @id @default(autoincrement())
+  requestDate      DateTime @default(now())
+  userRequesting   User     @relation(fields: [userRequestingId], references: [id], onDelete: Cascade)
+  userRequestingId Int
+  group            Group    @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  groupId          Int
+
+  @@unique([userRequestingId, groupId])
 }

@@ -40,7 +40,7 @@ app.use(
 
 app.use(express.json())
 
-const unhandledError: ErrorRequestHandler = async (err, req, res, next) => {
+const unhandledError: ErrorRequestHandler = async (err, _, res, __) => {
   return res.status(500).json({ message: `Unhandled error ${err.message}` })
 }
 
@@ -58,6 +58,8 @@ app.get('/user/:id', UserRouteFunctions.getUserFromId)
 
 // Group routes
 app.post('/group', GroupRouteFunctions.createGroupUsingUserCookie)
+app.put('/group/:name', GroupRouteFunctions.groupNameParamToId)
+app.put('/group/:name/request-join', GroupRouteFunctions.requestUserJoinGroup)
 app.delete('/group/:id', GroupRouteFunctions.deleteGroup)
 app.get('/group/users/:name', GroupRouteFunctions.getGroupUsers)
 app.get('/group/posts/:name', GroupRouteFunctions.getGroupPosts)

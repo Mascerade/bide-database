@@ -2,7 +2,6 @@ import { Prisma } from '@prisma/client'
 import { Request, RequestHandler, Response } from 'express'
 import { prisma } from '../db'
 import { checkUserGroup } from '../database-abstractions'
-import { nextTick } from 'process'
 
 export const groupNameToId: RequestHandler = async (req, res, next) => {
   const groupName: string = req.body.groupName

@@ -3,6 +3,17 @@ import { Request, RequestHandler, Response } from 'express'
 import { createGroup } from '../database-abstractions'
 import { prisma } from '../db'
 
+export const groupNameParamToId: RequestHandler = async (req, _, next) => {
+  const groupName = req.params.name
+  const group = await prisma.group.findUnique({
+    where: {
+      name: groupName
+    }
+  })
+  req.body.groupId = group?.id
+  next()
+}
+
 export const createGroupUsingUserCookie: RequestHandler = async (req, res) => {
   const userId = req.session.userId
   const groupToCreate = req.body.groupData
@@ -134,5 +145,27 @@ export const getGroupPosts: RequestHandler = async (req, res) => {
     return res.status(200).json({ groupPosts: groupPosts })
   } catch (e) {
     return res.status(400).json({ message: 'Could not find the group.' })
+  }
+}
+
+export const requestUserJoinGroup: RequestHandler = async (req, res) => {
+  const userId = req.session.userId
+  if (userId) {
+    try {
+      await prisma.joinGroupRequest.create({
+        data: {
+          userRequestingId: userId,
+          groupId: req.body.groupId
+        }
+      })
+
+      res
+        .status(204)
+        .json({ message: 'Successfully requested to join the group.' })
+    } catch (e) {
+      res
+        .status(409)
+        .json({ message: 'Was unable to make the join request for the user.' })
+    }
   }
 }
