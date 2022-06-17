@@ -81,7 +81,11 @@ export const getGroup: RequestHandler = async (req: Request, res: Response) => {
       include: {
         groupUsers: {
           include: {
-            user: true
+            user: {
+              include: {
+                groupGeneralTokens: true
+              }
+            }
           }
         },
         posts: {

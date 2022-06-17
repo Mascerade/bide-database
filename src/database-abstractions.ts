@@ -69,6 +69,7 @@ export const getAllUniqueUser = async (conditions: {
             group: true
           }
         },
+        joinGroupRequests: true,
         groupGeneralTokens: true,
         posts: {
           include: {

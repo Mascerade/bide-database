@@ -21,7 +21,7 @@ model User {
   posts              Post[]
   userGroups         GroupUser[]
   groupGeneralTokens GeneralTokenGroupUser[]
-  JoinGroupRequests  JoinGroupRequest[]
+  joinGroupRequests  JoinGroupRequest[]
 }
 
 model Post {
