@@ -19,6 +19,20 @@ export const createUser: RequestHandler = async (req, res) => {
     const userCreated = await prisma.user.create({
       data: {
         ...userToCreate
+      }, 
+      include: {
+        userGroups: {
+          include: {
+            group: true
+          }
+        },
+        joinGroupRequests: true,
+        groupGeneralTokens: true,
+        posts: {
+          include: {
+            group: true
+          }
+        }
       }
     })
 
