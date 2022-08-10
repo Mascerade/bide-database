@@ -16,8 +16,8 @@ model User {
   email              String                  @unique
   password           String
   username           String                  @unique
-  firstName          String?
-  lastName           String?
+  firstName          String
+  lastName           String
   posts              Post[]
   userGroups         GroupUser[]
   groupGeneralTokens GeneralTokenGroupUser[]
